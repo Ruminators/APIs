@@ -1,4 +1,4 @@
-from flask import Flask,request,abort
+from flask import Flask,request,abort,send_from_directory,redirect
 app = Flask(__name__)
 
 from selenium import webdriver
@@ -37,21 +37,22 @@ def initialize():
 def getQues():
     initialize()
     x=[]
-    for i in range(9):
+    for i in range(10):
 
         ques=[]
+        img=d.find_element_by_class_name('plate').get_attribute('src')
+
         a=d.find_element_by_class_name('ttable').find_elements_by_tag_name('tr')
         for n in a:
             fix=n.text.encode('utf-8','ignore')
             ques.append(fix)
-
 
         print(a)
         print('..........................................................')
         l=d.find_elements_by_name('sel')
         l[0].click()
         d.find_element_by_class_name('gbutton').click()
-        img=d.find_element_by_class_name('plate').get_attribute('src')
+        
         
         x.append({"step":i,"ink":img,"content":ques})
     return json.dumps(x)
@@ -89,13 +90,18 @@ def getQues():
 
 
 
-
+import json
 def getRes(ans):
     initialize()
-    for i in ans:
+
+    sortedans=sorted(ans.keys())
+    print(sortedans)
+    
+    for i in sortedans:
+        print((int(i),ans[i]))
         ques=[]
         a=d.find_element_by_class_name('ttable').find_elements_by_tag_name('input')
-        a[i].click()
+        a[int(ans[i])-1].click()
         print(d.title)
         print('..........................................................')
         
@@ -105,6 +111,7 @@ def getRes(ans):
     print(d.current_url)
 
     WebDriverWait(d,15).until(EC.text_to_be_present_in_element((By.TAG_NAME,"table"),"Test Results"))
+    print(d.find_element_by_tag_name('table').text)
     return d.find_element_by_tag_name('table').text
  
  
@@ -115,17 +122,27 @@ def getRes(ans):
 
 
 # -------------------------------Routing------------------------------------
-@app.route('/',methods=['GET'])
+
+
+@app.route('/')
+def index():
+    return redirect("/views/index.html")
+
+@app.route('/views/<path:filename>')
+def download_file(filename):
+    return send_from_directory('./views',
+                               filename, as_attachment=False)
+@app.route('/api/',methods=['GET'])
 def ques_handle():
     return getQues()
  
-@app.route('/ans',methods=['POST'])
+@app.route('/api/ans',methods=['POST'])
 def ans_handle():
     ans=request.get_json()
     return getRes(ans)
  
 if __name__ == "__main__":
-    app.run(host="localhost", port=103)
+    app.run(host="127.0.0.1", port=4553)
 
 # -------------------------------Routing------------------------------------
 

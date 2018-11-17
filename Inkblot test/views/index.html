@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+<html data-ng-app="myApp" data-ng-controller="cardsCtrl as ctrl">
+<head >
+    <link type="text/css" rel="stylesheet" href="./node_modules/angular-material/angular-material.css">
+    <link type="text/css" rel="stylesheet" href="./node_modules/angular-timeline/dist/angular-timeline.css"/>
+    <link type="text/css" rel="stylesheet" href="./node_modules/angular-timeline/dist/angular-timeline-animations.css"/>
+    <link type="text/css" rel="stylesheet" href="./node_modules/angular-hotkeys/build/hotkeys.css"/>
+    <link type="text/css" rel="stylesheet" href="./node_modules/animate.css/animate.css"/>
+    <link type="text/css" rel="stylesheet" href="./css/scrollbars.css"> 
+    <link type="text/css" rel="stylesheet" href="./css/autocomplete.css"> 
+    <link type="text/css" rel="stylesheet" href="./css/card.css"> 
+    <link type="text/css" rel="stylesheet" href="./css/disabled.css"> 
+    <link type="text/css" rel="stylesheet" href="./iconfont/material-icons.css">    
+    
+    <style type="text/css">
+    
+    md-toolbar{
+        padding-left: 20px;
+    }
+    .animateHidden
+    {
+        visibility: hidden !important;
+    }
+    md-toast {
+                z-index: 21 !important;
+    }
+    md-toast.md-top {
+                top: calc(10% + 36px);
+    }
+    </style>
+        
+</head> 
+    <script src="./node_modules/angular/angular.js"></script>
+    <script src="./node_modules/angular-animate/angular-animate.js"></script>
+    <script src="./node_modules/angular-aria/angular-aria.js"></script>
+    <script src="./node_modules/angular-material/angular-material.js"></script>
+    <script src="./node_modules/angular-messages/angular-messages.js"></script>
+    <script src="./node_modules/angular-scroll-animate/dist/angular-scroll-animate.js"></script>
+    <script src="./node_modules/angular-timeline/dist/angular-timeline.js"></script>
+    <script src="./node_modules/ng-file-upload/dist/ng-file-upload.js"></script>
+    <script src="./node_modules/angular-hotkeys/build/hotkeys.js"></script>
+
+    
+    <script>
+        var app=angular.module('myApp',['ngMaterial','ngAnimate','ngAria','ngMessages','ngFileUpload','angular-scroll-animate','angular-timeline','PatientBufferModule','AnimationsModule','Medicines','cfp.hotkeys'])
+        .config(function($mdThemingProvider){
+            $mdThemingProvider.theme('default')
+            .primaryPalette('deep-purple')
+        
+     .accentPalette('red');
+        });
+        
+    </script>
+    
+    <script src="./js/controllers/cardsCtrl.js"></script>
+    <script src="./js/controllers/openPatientCtrl.js"></script>
+    <script src="./js/controllers/addPatientCtrl.js"></script>
+    <script src="./js/services/PatientBuffer.js"></script>
+    <script src="./js/services/Medicines.js"></script>
+    <script src="./js/services/Animations.js"></script>
+    <script src="./js/services/iconSetProvider.js"></script>
+    <script src="./js/filters/relativeTime.js"></script>
+    <script src="./js/filters/unique.js"></script>
+    <script src="./js/filters/fileSize.js"></script>
+
+  
+
+<body >
+
+<div  layout="column" style="max-height:88%"  >
+        
+<md-toolbar style="padding: 0px; min-height:36px !important;" md-colors="{background: 'primary-800' }"  md-scroll-shrink=false layout="row" layout-align="center end"  layout-fill>
+        <div flex style="min-height: 36px;-webkit-app-region:drag;">
+            <div style="min-width: 36px;min-height:36px"></div>
+        </div>
+        <div style="opacity: 0.7;padding-right: 8px;">
+        <md-button style="margin:0px;padding: 0px;width: 32px" class="md-mini md-icon-button" ng-click="ctrl.clickClose()"><md-icon  style="font-size: 18px;padding-top: 20%">close</md-icon></md-button>
+        </div>
+ 
+</md-toolbar>
+<md-toolbar class="md-medium-tall"  md-scroll-shrink=false layout="row" layout-align="start center" >
+        <div layout-align="center" layout="row" hide-xs flex="60">
+            <img hide-sm style="width:128px;height: 128px; " src="./favicon.png">
+         <h5  >Rorschach Psychometeric InkBlot Questionnaire </h5>
+        </div>
+        
+       
+
+           
+           <div flex layout="row" style="padding-right: 24px" layout-align="end center " >
+                <div style="margin-right: 16px" ng-hide="!ctrl.processchk()">
+                        <md-progress-circular class="md-accent" md-diameter="32"  md-mode="indeterminate"></md-progress-circular>
+                </div>  
+                <md-button ng-click="ctrl.refresh()" class="md-fab md-mini" aria-label="search by name">
+                        <md-icon >autorenew</md-icon>
+                    </md-button> 
+                <div ng-if="!ctrl.final">
+                <md-button ng-click="ctrl.done()" ng-disabled="ctrl.checkd()" class="md-fab md-mini" aria-label="search by name">
+                        <md-icon >done</md-icon>
+                    </md-button>
+                    </div>
+
+           <md-button class="md-icon-button"  ng-click="ctrl.hotkeys.toggleCheatSheet()"><md-icon >help_outline</md-icon></md-button>
+           </div>
+  
+</md-toolbar>
+
+
+
+   
+<md-content id="PatientCardsWindow">
+    {{ctrl.pulkit}}
+<div flex style="margin-right: 10%;margin-left: 10%; margin-top: 5%;margin-bottom: 10px;padding-bottom:100px;overflow: hidden">
+<div  layout="row" layout-align="center" layout-wrap>
+    
+<div flex="80"  flex-gt-md="50" data-ng-repeat="card in values=(ctrl.cards)" >
+    <div >
+        
+    <md-card ng-hide="!ctrl.testchk" bind-scroll-to="#PatientCardsWindow"  when-visible="ctrl.cardAnim.animateCardIn" when-not-visible="ctrl.cardAnim.animateCardOut">
+        <md-card-title>
+            <div layout="column" layout-fill>
+                
+          <md-card-title-text flex-xs="100" flex="60" layout="row" layout-fill>
+            <span class="md-headline"  flex id="name">Q{{card.step+1}}.</span>
+        </md-card-title-text>
+    </md-card-title>
+         
+          
+          
+          <md-card-title-media   flex="80" layout="row" layout-align="center">
+              <img style="width:50%;margin-bottom: 40px" src="{{card.ink}}">
+            <!-- <div class="md-media-md card-media" style="background-size: cover;
+
+    background-color: {{ctrl.colors.getThemeColor('primary-400')}};
+    background-image: url({{card.ink}});
+    width:70%;min-height:100% ;margin:10px" ></div> -->
+          </md-card-title-media>
+
+
+          
+
+          <md-radio-group ng-model="ctrl.selected[$index+1]">
+                <md-radio-button ng-repeat="ques in card.content" ng-value="$index+1" aria-label="{{item.label}}">
+                        {{ques}}
+                </md-radio-button>
+              </md-radio-group>
+
+
+
+            </div>
+        
+        <md-content flex class="md-primary" style="border: #d2d2d2;border-style: dashed ;border-width: 1px;border-right: none;border-left:none;border-bottom:none  ">
+        <md-card-actions class=" md-primary"  layout="row" layout-align="end end">
+            <div  flex layout="row" layout-align="end end">
+            <md-button class="md-icon-button " data-ng-click="ctrl.deletePatient($event,card._id,card.name)"><md-icon  aria-label="open" class="md-24">delete</md-icon></md-button>
+            
+          <md-button class="md-icon-button " data-ng-click="ctrl.openPatientInfo($event,card.name,card._id)"><md-icon  aria-label="open" class="md-24">open_in_new</md-icon></md-button>
+            </div>
+        </md-card-actions>
+        </md-content>
+      </md-card>
+
+
+    </div>
+
+
+    
+    
+
+
+
+
+
+</div>
+
+
+<div style="margin: 20vh" ng-if="!values">
+        <div layout="row"   layout-align="space-around space-around">
+                          <md-progress-circular md-mode="indeterminate"   color="primary"></md-progress-circular>
+                    </div>
+        </div>
+<div  class="md-title" ng-if="!ctrl.testchk">
+        <md-card   bind-scroll-to="#PatientCardsWindow"  when-visible="ctrl.cardAnim.animateCardIn" when-not-visible="ctrl.cardAnim.animateCardOut">
+                <md-card-title>
+                    <div layout="column" layout-fill>
+                        
+                  <md-card-title-text flex-xs="100" flex="60" layout="row" layout-fill>
+                    <span class="md-headline"  flex id="name">Test Results</span>
+                </md-card-title-text>
+            </md-card-title>
+    
+                <div><p>{{ctrl.test}}</p></div>
+                
+              </md-card>
+        </div>
+</div>
+</div>
+</md-content>
+<md-button ng-if="ctrl.PatientBufferServ.PatientCards" data-ng-click="ctrl.addPatientInfo($event)" class="md-fab md-fab-bottom-right" style="position: fixed !important"   aria-label="add new patient" >           
+            <md-icon  >add</md-icon>
+     </md-button>
+
+</div>
+   
+</body>
+</html>
